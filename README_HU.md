@@ -27,5 +27,7 @@ Igen! Habár most a GitHub-on lévő readme fájlt olvasod, szóval a kódot má
 
 ## Pár adat:
 C# .NET Framework 4.7.2 (Windows Exe)
+
 C# .NET Core 3.1 (Linux port GitHub-on)
+
 ~366 sor kód

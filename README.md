@@ -30,5 +30,7 @@ I guess you've already found it, since you are reading the GitHub readme, so it'
 
 ## Some stats
 Built on C# .NET Framework 4.7.2 (Windows version, available on GitHub)
+
 Ported to C# .NET Core 3.1 (For Linux and macOS, Soon-to-be on GitHub)
+
 ~366 lines of code

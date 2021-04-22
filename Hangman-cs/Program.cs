@@ -1,7 +1,19 @@
 ﻿/*
  * Hangman game by zsotroav
- * (c) 2020 zsotroav
- * Licensed under the GNU Affero General Public License v3.0 (GNU AGPL 3.0)
+ * Copyright 2021 zsotroav
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
@@ -12,45 +24,39 @@ using System.Linq;
 
 namespace HangmanCs
 {
-    class Program
+    internal class Program
     {
-        static int[][] Lvl = new int[3][]; // Difficulty levels are stored in this
+        private static int[][] _lvl = new int[3][]; // Difficulty levels are stored in this
 
-        static void Main()
+        private static void Main()
         {
-            string WordsLoc = "words.txt";  // Default words list
-
-            if (File.Exists("wordlistloc.hangman.zsotr"))   // Option to save/load wordlist from anywhere (with config file)
-            {
-                StreamReader srlist = new StreamReader("wordlistloc.hangman.zsotr");
-                WordsLoc = srlist.ReadLine();
-                srlist.Close();
-            }
+            var wordsLoc = "words.txt";  // Default words list
+            
             Console.Clear();
 
-            Lvl[0] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };    // Define which frames to use in different difficulty levels.
-            Lvl[1] = new int[] { 1, 3, 4, 5, 6, 7, 8, 9 };
-            Lvl[2] = new int[] { 1, 4, 6, 7, 8, 9 };
+            _lvl[0] = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };    // Define which frames to use in different difficulty levels.
+            _lvl[1] = new[] { 1, 3, 4, 5, 6, 7, 8, 9 };
+            _lvl[2] = new[] { 1, 4, 6, 7, 8, 9 };
 
-            if (File.Exists(WordsLoc))
+            if (File.Exists(wordsLoc))
             {
-                int i = 0;
-                StreamReader SrChk = new StreamReader(WordsLoc); // Count the number of words in the text file (one word is one line)
-                while (!SrChk.EndOfStream)
+                var i = 0;
+                var srChk = new StreamReader(wordsLoc); // Count the number of words in the text file (one word is one line)
+                while (!srChk.EndOfStream)
                 {
-                    SrChk.ReadLine();
+                    srChk.ReadLine();
                     i++;
                 }
-                SrChk.Close();
+                srChk.Close();
 
-                string[] words = new string[i];
+                var words = new string[i];
 
-                StreamReader SrLoad = new StreamReader(WordsLoc); // Load the words into a string[]
-                for (int f = 0; f < i; f++)
+                var srLoad = new StreamReader(wordsLoc); // Load the words into a string[]
+                for (var f = 0; f < i; f++)
                 {
-                    words[f] = SrLoad.ReadLine().ToLower();
+                    words[f] = srLoad.ReadLine().ToLower();
                 }
-                SrLoad.Close();
+                srLoad.Close();
 
                 GameStart(i, words); // Hand off logic to initialization
 
@@ -60,7 +66,7 @@ namespace HangmanCs
 
                 Console.WriteLine("Hangman game by zsotroav.");
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Can't find word list \"{0}\"", WordsLoc);
+                Console.WriteLine("Can't find word list \"{0}\"", wordsLoc);
                 Console.ResetColor();
 
                 Console.WriteLine("\nPress Any key to exit...");
@@ -69,104 +75,103 @@ namespace HangmanCs
             }
         }
 
-        static void GameStart(int Number, string[] WordList)
+        private static void GameStart(int number, string[] wordList)
         {
-            Random Ran = new Random();
-            int Rand = Ran.Next(1, Number);
-            string Word = WordList[Rand];               // Get a random word from the given list
+            var ran = new Random();
+            var rand = ran.Next(1, number);
+            var word = wordList[rand];               // Get a random word from the given list
 
-            char[] WordChars = new char[Word.Length];   // Cut the word into letters (chars)
-            for (int i = 0; i < Word.Length; i++)
+            var wordChars = new char[word.Length];   // Cut the word into letters (chars)
+            for (var i = 0; i < word.Length; i++)
             {
-                WordChars[i] = char.Parse(Word.Substring(i, 1));
+                wordChars[i] = char.Parse(word.Substring(i, 1));
             }
 
             Console.WriteLine("Hangman game by zsotroav.");
-            Console.WriteLine("Before we start... How hard do you want the game to be? (The word is {0} letters long) \n1 Gives you 9 tries \n2 Gives you 7 tries\n3 Gives you 5 tries", Word.Length);
-            string Level = Console.ReadLine();
-            if (int.TryParse(Level, out int Lvl))
+            Console.WriteLine("Before we start... How hard do you want the game to be? (The word is {0} letters long) \n1 Gives you 9 tries \n2 Gives you 7 tries\n3 Gives you 5 tries", word.Length);
+            var level = Console.ReadLine();
+            if (!int.TryParse(level, out var lvl)) return;
+
+            lvl = int.Parse(level);
+            if (lvl > 3)
             {
-                Lvl = int.Parse(Level);
-                if (Lvl > 3)
-                {
-                    Console.WriteLine("That is not a number between 1 and 3...");
-                    Console.ReadKey();
-                    Main();
-                }
-                else
-                    Game(Word, WordChars, Lvl);      // Start the game logic
+                Console.WriteLine("That is not a number between 1 and 3...");
+                Console.ReadKey();
+                Main();
             }
+            else
+                Game(word, wordChars, lvl);      // Start the game logic
         }
 
-        static void Game(string Word, char[] WordCh, int Difficulty)
+        private static void Game(string word, char[] wordCh, int difficulty)
         {
             Console.Clear();
             // Initialize some important variables
-            List<char> Wrong = new List<char> { };      // List of wrong letters guessed (shown)
-            List<char> Guessed = new List<char> { };    // List of all letters guessed (hidden)
-            int Lenght = Word.Length;   // For convenience
-            int Guess = 0;              // Count the number off guesses, this is also used for drawing
+            var wrong = new List<char> { };      // List of wrong letters guessed (shown)
+            var guessed = new List<char> { };    // List of all letters guessed (hidden)
+            var length = word.Length;   // For convenience
+            var guess = 0;              // Count the number off guesses, this is also used for drawing
 
-            bool state = true;          // Is the game running?
-            bool win = true;            // Did you win?
-            int GuessedRight = 0;       // No. of right letters guessed
-            string WordGuessed = "";    // The displayed word
+            var state = true;          // Is the game running?
+            var win = true;            // Did you win?
+            var guessedRight = 0;       // No. of right letters guessed
+            var wordGuessed = "";    // The displayed word
 
-            for (int f = 0; f < Lenght; f++)
+            for (var f = 0; f < length; f++)
             {
-                WordGuessed += "_";
+                wordGuessed += "_";
             }
-            WordGuessed += " (" + Lenght + ")";
+            wordGuessed += " (" + length + ")";
 
             while (state)
             {
-                bool Correct = false;
+                var correct = false;
                 Console.SetCursorPosition(0, 0);    // Instead of Console.Clear(); we overwrite the currently displayed items.
                 Console.WriteLine("Hangman game by zsotroav.");
-                Console.WriteLine("Current word: " + WordGuessed + "\n\n");
+                Console.WriteLine("Current word: " + wordGuessed + "\n\n");
 
-                DrawState(Guess, Difficulty);
+                DrawState(guess, difficulty);
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Wrong letters: " + string.Join(" ", Wrong));
+                Console.WriteLine("Wrong letters: " + string.Join(" ", wrong));
                 Console.ResetColor();
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("\n\nNow Guess!");
                 Console.ResetColor();
 
-                char Input = Console.ReadKey().KeyChar.ToString().ToLower()[0]; // Weird way to read the pressed key and convert it to lower case
+                var input = Console.ReadKey().KeyChar.ToString().ToLower()[0]; // Weird way to read the pressed key and convert it to lower case
 
 
-                for (int i = 0; i < Lenght; i++)
+                for (var i = 0; i < length; i++)
                 {
-                    if (Input == WordCh[i] && !Guessed.Contains(Input)) // If it's in the word and is not already guessed
+                    if (input == wordCh[i] && !guessed.Contains(input)) // If it's in the word and is not already guessed
                     {
-                        GuessedRight++;
-                        Correct = true;
+                        guessedRight++;
+                        correct = true;
 
-                        if (i != Lenght)
-                            WordGuessed = WordGuessed.Substring(0, i) + Input + WordGuessed.Substring(i + 1);
+                        if (i != length)
+                            wordGuessed = wordGuessed.Substring(0, i) + input + wordGuessed.Substring(i + 1);
                         else
-                            WordGuessed = WordGuessed.Substring(0, i) + Input;
+                            wordGuessed = wordGuessed.Substring(0, i) + input;
                     }
                 }
 
-                Guessed.Add(Input);
+                guessed.Add(input);
 
-                if (!Correct && !Wrong.Contains(Input) && !WordCh.Contains(Input)) // We guessed wrong, and we haven't guessed that yet
+                if (!correct && !wrong.Contains(input) && !wordCh.Contains(input)) // We guessed wrong, and we haven't guessed that yet
                 {
-                    Wrong.Add(Input);
-                    Guess++; // Add to the "kill score"...
+                    wrong.Add(input);
+                    guess++; // Add to the "kill score"...
 
-                    if (Guess > Lvl[Difficulty-1].Length - 2) // ...so that we can die
+                    if (guess > _lvl[difficulty-1].Length - 2) // ...so that we can die
                     {
                         state = false; // stop the cycle
                         win = false;
                     }
                 }
 
-                if (GuessedRight == Lenght) // Did we win?
+                if (guessedRight == length) // Did we win?
                     state = false;
 
             }
@@ -177,15 +182,15 @@ namespace HangmanCs
             Console.SetCursorPosition(0, 0);
 
             Console.WriteLine("Hangman game by zsotroav.");
-            Console.WriteLine("Current word: " + WordGuessed + "\n\n");
-            DrawState(Guess, Difficulty);
+            Console.WriteLine("Current word: " + wordGuessed + "\n\n");
+            DrawState(guess, difficulty);
 
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Wrong letters: " + string.Join(" ", Wrong));
+            Console.WriteLine("Wrong letters: " + string.Join(" ", wrong));
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("The correct word was \"{0}\"!", Word);
+            Console.WriteLine("The correct word was \"{0}\"!", word);
             Console.ResetColor();
 
             if (win)
@@ -196,29 +201,29 @@ namespace HangmanCs
                 GameOver();
         }
 
-        static void GameOver()
+        private static void GameOver()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\nSorry, but you ran out of tries!");
             Console.ResetColor();
 
             Console.WriteLine("\n\nDo you want to try again? (Y/N)");
-            char response = Console.ReadKey().KeyChar;
+            var response = Console.ReadKey().KeyChar;
 
             Console.Clear();
 
             if (response == 'y' || response == 'Y')
-                Main(); // Try again "restarts" (jumps back to the beggining) the program 
+                Main(); // Try again "restarts" (jumps back to the begging) the program 
         }
 
-        static void GameWin()
+        private static void GameWin()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\nCongratulations you won!");
             Console.ResetColor();
 
             Console.WriteLine("\n\nDo you want to play once more? (Y/N)");
-            char response = Console.ReadKey().KeyChar;
+            var response = Console.ReadKey().KeyChar;
 
             Console.Clear();
 
@@ -227,14 +232,14 @@ namespace HangmanCs
         }
 
 
-        static void DrawState(int MissPoint, int Difficulty)
+        private static void DrawState(int missPoint, int difficulty)
         {
             // Here we decide what stage we want dawn.
-            int State = Lvl[Difficulty-1][MissPoint];
+            var state = _lvl[difficulty-1][missPoint];
 
-            Func<bool>[] States = {DrawState0, DrawState1, DrawState2, DrawState3, DrawState4, DrawState5, DrawState6, DrawState7, DrawState8, DrawState9};
+            Func<bool>[] states = {DrawState0, DrawState1, DrawState2, DrawState3, DrawState4, DrawState5, DrawState6, DrawState7, DrawState8, DrawState9};
 
-            States[State]();
+            states[state]();
         }
 
         #region DrawStates
@@ -244,7 +249,7 @@ namespace HangmanCs
          * Not the best and/or most optimal, but it works.
          */
 
-        static bool DrawState0()
+        private static bool DrawState0()
         {
             for (int i = 0; i < 12; i++)
             {
@@ -254,7 +259,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState1()
+        private static bool DrawState1()
         {
             for (int i = 0; i < 11; i++)
             {
@@ -264,7 +269,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState2()
+        private static bool DrawState2()
         {
             Console.WriteLine();
             for (int i = 0; i < 10; i++)
@@ -273,7 +278,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState3()
+        private static bool DrawState3()
         {
             Console.WriteLine("     ═════════╗");
             for (int i = 0; i < 10; i++)
@@ -282,7 +287,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState4()
+        private static bool DrawState4()
         {
             Console.WriteLine("    ╔═════════╗");
             Console.WriteLine("    ║         ║ \n    ║         ║");
@@ -292,7 +297,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState5()
+        private static bool DrawState5()
         {
             Console.WriteLine("    ╔═════════╗");
             Console.WriteLine("    ║         ║ \n    ║         ║");
@@ -305,7 +310,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState6()
+        private static bool DrawState6()
         {
             Console.WriteLine("    ╔═════════╗");
             Console.WriteLine("    ║         ║ \n    ║         ║");
@@ -319,7 +324,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState7()
+        private static bool DrawState7()
         {
             Console.WriteLine("    ╔═════════╗");
             Console.WriteLine("    ║         ║ \n    ║         ║");
@@ -333,7 +338,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState8()
+        private static bool DrawState8()
         {
             Console.WriteLine("    ╔═════════╗");
             Console.WriteLine("    ║         ║ \n    ║         ║");
@@ -347,7 +352,7 @@ namespace HangmanCs
             return true;
         }
 
-        static bool DrawState9()
+        private static bool DrawState9()
         {
             Console.WriteLine("    ╔═════════╗"); 
             Console.WriteLine("    ║         ║ \n    ║         ║");
